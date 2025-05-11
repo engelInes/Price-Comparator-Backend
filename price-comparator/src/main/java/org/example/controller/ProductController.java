@@ -1,6 +1,7 @@
 package org.example.controller;
 
 import org.example.dto.PriceEntryDTO;
+import org.example.service.IProductService;
 import org.example.service.ProductService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -13,10 +14,10 @@ import java.util.List;
 @RequestMapping("/api/products")
 public class ProductController {
 
-    private final ProductService productService;
+    private final IProductService productService;
 
-    public ProductController() {
-        this.productService = new ProductService();
+    public ProductController(IProductService productService) {
+        this.productService = productService;
     }
 
     @GetMapping("/load")

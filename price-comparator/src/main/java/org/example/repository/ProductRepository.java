@@ -4,6 +4,7 @@ import org.apache.tomcat.jni.FileInfo;
 import org.example.model.PriceEntry;
 import org.example.utils.CsvUtil;
 import org.example.utils.FileNameUtil;
+import org.springframework.stereotype.Repository;
 
 import java.io.File;
 import java.time.LocalDate;
@@ -12,6 +13,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+@Repository
 public class ProductRepository implements ItemRepository<PriceEntry> {
 
     private static final Pattern DATE_PATTERN = Pattern.compile(".*_(\\d{4}-\\d{2}-\\d{2})\\.csv$");

@@ -5,12 +5,14 @@ import org.example.model.Discount;
 import org.example.utils.CsvUtil;
 import org.example.utils.DateUtil;
 import org.example.utils.FileNameUtil;
+import org.springframework.stereotype.Repository;
 
 import java.io.File;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+@Repository
 public class DiscountRepository implements ItemRepository<Discount> {
 
     @Override

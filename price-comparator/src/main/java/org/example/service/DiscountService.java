@@ -4,15 +4,20 @@ import org.example.dto.DiscountDTO;
 import org.example.model.Discount;
 import org.example.repository.DiscountRepository;
 import org.example.repository.ItemRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class DiscountService {
+@Service
+public class DiscountService implements IDiscountService {
     private final ItemRepository<Discount> discountRepository;
 
-    public DiscountService() {
-        this.discountRepository = new DiscountRepository();
+    @Autowired
+    public DiscountService(ItemRepository<Discount> discountRepository) {
+        this.discountRepository = discountRepository;
     }
 
     public List<DiscountDTO> loadDiscounts(String filePath) {

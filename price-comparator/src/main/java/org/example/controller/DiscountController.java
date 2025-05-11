@@ -2,6 +2,7 @@ package org.example.controller;
 
 import org.example.dto.DiscountDTO;
 import org.example.service.DiscountService;
+import org.example.service.IDiscountService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -13,10 +14,10 @@ import java.util.List;
 @RequestMapping("/api/discounts")
 public class DiscountController {
 
-    private final DiscountService discountService;
+    private final IDiscountService discountService;
 
-    public DiscountController() {
-        this.discountService = new DiscountService();
+    public DiscountController(IDiscountService discountService) {
+        this.discountService = discountService;
     }
 
     @GetMapping("/load")
