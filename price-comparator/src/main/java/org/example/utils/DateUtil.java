@@ -9,8 +9,4 @@ public class DateUtil {
     public static LocalDate parseDate(String dateStr) {
         return LocalDate.parse(dateStr, DEFAULT_FORMATTER);
     }
-
-    public static boolean isWithinLast24Hours(LocalDate date) {
-        return !date.isBefore(LocalDate.now().minusDays(1));
-    }
 }

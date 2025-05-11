@@ -1,6 +1,5 @@
 package org.example.repository;
 
-import org.apache.tomcat.jni.FileInfo;
 import org.example.model.PriceEntry;
 import org.example.utils.CsvUtil;
 import org.example.utils.FileNameUtil;
@@ -13,13 +12,11 @@ import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Repository
 public class ProductRepository implements ItemRepository<PriceEntry> {
 
-    private static final Pattern DATE_PATTERN = Pattern.compile(".*_(\\d{4}-\\d{2}-\\d{2})\\.csv$");
     @Override
     public List<PriceEntry> loadEntriesFromFile(String filePath) {
         List<PriceEntry> priceEntries = new ArrayList<>();

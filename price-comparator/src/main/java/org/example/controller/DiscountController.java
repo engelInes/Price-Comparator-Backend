@@ -1,7 +1,6 @@
 package org.example.controller;
 
 import org.example.dto.DiscountDTO;
-import org.example.service.DiscountService;
 import org.example.service.IDiscountService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;

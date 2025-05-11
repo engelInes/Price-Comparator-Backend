@@ -2,10 +2,8 @@ package org.example.service;
 
 import org.example.dto.DiscountDTO;
 import org.example.model.Discount;
-import org.example.repository.DiscountRepository;
 import org.example.repository.ItemRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
