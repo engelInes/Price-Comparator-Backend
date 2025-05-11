@@ -1,8 +1,8 @@
-package org.example.model;
+package org.example.dto;
 
 import java.time.LocalDate;
 
-public class Discount {
+public class DiscountDTO {
     private String productId;
     private String productName;
     private String brand;
@@ -65,8 +65,8 @@ public class Discount {
         return startingDate;
     }
 
-    public void setStartingDate(LocalDate fromDate) {
-        this.startingDate = fromDate;
+    public void setStartingDate(LocalDate startingDate) {
+        this.startingDate = startingDate;
     }
 
     public LocalDate getEndingDate() {
@@ -83,20 +83,5 @@ public class Discount {
 
     public void setPercentageOfDiscount(double percentageOfDiscount) {
         this.percentageOfDiscount = percentageOfDiscount;
-    }
-
-    @Override
-    public String toString() {
-        return "Discount{" +
-                "productId='" + productId + '\'' +
-                ", productName='" + productName + '\'' +
-                ", brand='" + brand + '\'' +
-                ", packageQuantity=" + packageQuantity +
-                ", packageUnit='" + packageUnit + '\'' +
-                ", productCategory='" + productCategory + '\'' +
-                ", startingDate=" + startingDate +
-                ", endingDate=" + endingDate +
-                ", percentageOfDiscount=" + percentageOfDiscount +
-                '}';
     }
 }
