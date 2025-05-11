@@ -8,7 +8,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -37,4 +40,30 @@ public class DiscountService implements IDiscountService {
             return dto;
         }).collect(Collectors.toList());
     }
+
+    public List<DiscountDTO> getMaxDiscountPerProduct(int limit) {
+        LocalDate today = LocalDate.now();
+
+        List<Discount> allDiscounts = discountRepository.loadAllEntries();
+        System.out.println("Total loaded for max-per-product: " + allDiscounts.size());
+
+        Map<String, Discount> maxDiscounts = allDiscounts.stream()
+                .filter(discount -> !today.isBefore(discount.getStartingDate()) &&
+                        !today.isAfter(discount.getEndingDate()))
+                .collect(Collectors.toMap(
+                        Discount::getProductId,
+                        discount -> discount,
+                        (d1, d2) -> d1.getPercentageOfDiscount() >= d2.getPercentageOfDiscount() ? d1 : d2
+                ));
+
+        List<DiscountDTO> result = maxDiscounts.values().stream()
+                .sorted(Comparator.comparing(Discount::getPercentageOfDiscount).reversed())
+                .limit(limit)
+                .map(DiscountDTO::convertToDTO)
+                .collect(Collectors.toList());
+
+        System.out.println("Max discounts per product selected: " + result.size());
+        return result;
+    }
+
 }
