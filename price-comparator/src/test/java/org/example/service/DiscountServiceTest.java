@@ -1,7 +1,8 @@
+package org.example.service;
+
 import org.example.dto.DiscountDTO;
 import org.example.model.Discount;
 import org.example.repository.ItemRepository;
-import org.example.service.DiscountService;
 import org.junit.Test;
 
 import java.time.LocalDate;
@@ -40,13 +41,13 @@ public class DiscountServiceTest {
 
         LocalDate today = LocalDate.now();
 
-        Discount d1 = new Discount("1", "Item A", "BrandX", 1, "pc", "Cat",
+        Discount d1 = new Discount("P001", "Lapte", "Zuzu", 1, "l", "Lactate",
                 today.minusDays(1), today.plusDays(1), 20.0);
 
-        Discount d2 = new Discount("1", "Item A", "BrandX", 1, "pc", "Cat",
+        Discount d2 = new Discount("P001", "Paine", "Boromir", 1, "kg", "Brutarie",
                 today.minusDays(2), today.plusDays(2), 30.0);
 
-        Discount d3 = new Discount("2", "Item B", "BrandY", 1, "pc", "Cat",
+        Discount d3 = new Discount("P002", "Suc", "Fanta", 1, "l", "Sucuri",
                 today.minusDays(1), today.plusDays(1), 25.0);
 
         when(mockRepo.loadAllEntries()).thenReturn(List.of(d1, d2, d3));
@@ -57,9 +58,9 @@ public class DiscountServiceTest {
 
         assertAll("Max discounts per product",
                 () -> assertEquals(2, result.size()),
-                () -> assertEquals("1", result.get(0).getProductId()),
+                () -> assertEquals("P001", result.get(0).getProductId()),
                 () -> assertEquals(30.0, result.get(0).getPercentageOfDiscount(), 0.001),
-                () -> assertEquals("2", result.get(1).getProductId()),
+                () -> assertEquals("P002", result.get(1).getProductId()),
                 () -> assertEquals(25.0, result.get(1).getPercentageOfDiscount(), 0.001)
         );
     }

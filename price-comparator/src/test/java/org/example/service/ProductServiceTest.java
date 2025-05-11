@@ -1,7 +1,8 @@
+package org.example.service;
+
 import org.example.dto.PriceEntryDTO;
 import org.example.model.PriceEntry;
 import org.example.repository.ItemRepository;
-import org.example.service.ProductService;
 import org.junit.Test;
 import org.mockito.Mockito;
 

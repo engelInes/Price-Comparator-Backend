@@ -14,6 +14,21 @@ public class PriceEntry {
     private double price;
     private String currency;
 
+    public PriceEntry(String productId, String productName, String productCategory,  String brand, double packageQuantity, String packageUnit, String storeName, LocalDate date, double price, String currency) {
+        this.productId = productId;
+        this.productName = productName;
+        this.productCategory = productCategory;
+        this.brand = brand;
+        this.packageQuantity = packageQuantity;
+        this.packageUnit = packageUnit;
+        this.storeName = storeName;
+        this.date = date;
+        this.price = price;
+        this.currency = currency;
+    }
+
+    public PriceEntry() {};
+
     public String getCurrency() {
         return currency;
     }
