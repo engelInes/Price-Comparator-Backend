@@ -22,15 +22,6 @@ public class ProductService implements IProductService{
     }
 
     public List<PriceEntryDTO> loadPriceEntries(String filePath) {
-        List<PriceEntry> entries = productRepository.loadEntriesFromFile(filePath);
-
-        return entries.stream().map(entry -> {
-            PriceEntryDTO dto = new PriceEntryDTO();
-            dto.setProductId(entry.getProductId());
-            dto.setStoreName(entry.getStoreName());
-            dto.setDate(entry.getDate());
-            dto.setPrice(entry.getPrice());
-            return dto;
-        }).collect(Collectors.toList());
+        return productRepository.loadEntriesFromFile(filePath).stream().map(PriceEntryDTO::from).collect(Collectors.toList());
     }
 }
