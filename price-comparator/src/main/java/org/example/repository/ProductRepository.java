@@ -14,9 +14,18 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
+/**
+ * Repository for loading and parsing product price entries from CSV files.
+ */
 @Repository
 public class ProductRepository implements ItemRepository<PriceEntry> {
 
+    /**
+     * Loads price entries from a specific CSV file, if it's not a discount file.
+     *
+     * @param filePath The path to the file.
+     * @return A list of PriceEntry objects.
+     */
     @Override
     public List<PriceEntry> loadEntriesFromFile(String filePath) {
         List<PriceEntry> priceEntries = new ArrayList<>();
@@ -56,6 +65,12 @@ public class ProductRepository implements ItemRepository<PriceEntry> {
         return priceEntries;
     }
 
+    /**
+     * Loads all price entries by scanning the data directory recursively,
+     * excluding discount files.
+     *
+     * @return A list of all PriceEntry records found.
+     */
     @Override
     public List<PriceEntry> loadAllEntries() {
         List<PriceEntry> all = new ArrayList<>();
@@ -71,24 +86,49 @@ public class ProductRepository implements ItemRepository<PriceEntry> {
         return all;
     }
 
+    /**
+     * Finds all price entries by product name.
+     *
+     * @param productName The product name.
+     * @return List of matching price entries.
+     */
     public List<PriceEntry> findByProductName(String productName) {
         return loadAllEntries().stream()
                 .filter(p -> p.getProductName().equals(productName))
                 .toList();
     }
 
+    /**
+     * Finds price entries by product name and store name.
+     *
+     * @param productName The product name.
+     * @param storeName The store name.
+     * @return List of matching price entries.
+     */
     public List<PriceEntry> findByProductNameAndStore(String productName, String storeName) {
         return loadAllEntries().stream()
                 .filter(p -> p.getProductName().equals(productName) && p.getStoreName().equals(storeName))
                 .toList();
     }
 
+    /**
+     * Finds price entries by product category.
+     *
+     * @param category The product category.
+     * @return List of matching price entries.
+     */
     public List<PriceEntry> findByProductCategory(String category) {
         return loadAllEntries().stream()
                 .filter(p -> p.getProductCategory().equals(category))
                 .toList();
     }
 
+    /**
+     * Finds price entries by brand name.
+     *
+     * @param brand The brand name.
+     * @return List of matching price entries.
+     */
     public List<PriceEntry> findByBrand(String brand) {
         return loadAllEntries().stream()
                 .filter(p -> p.getBrand().equals(brand))

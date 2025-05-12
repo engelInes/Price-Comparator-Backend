@@ -11,9 +11,18 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Repository that handles loading and managing Discount entries from CSV files.
+ */
 @Repository
 public class DiscountRepository implements ItemRepository<Discount> {
 
+    /**
+     * Loads discount entries from the given file if it matches the expected discount filename pattern.
+     *
+     * @param filePath The path to the CSV file.
+     * @return A list of Discount objects parsed from the file.
+     */
     @Override
     public List<Discount> loadEntriesFromFile(String filePath) {
         List<Discount> discounts = new ArrayList<>();
@@ -51,6 +60,11 @@ public class DiscountRepository implements ItemRepository<Discount> {
         return discounts;
     }
 
+    /**
+     * Loads all discount entries by scanning the default data directory for valid discount CSV files.
+     *
+     * @return A list of all Discount entries found.
+     */
     @Override
     public List<Discount> loadAllEntries() {
         List<Discount> allDiscounts = new ArrayList<>();

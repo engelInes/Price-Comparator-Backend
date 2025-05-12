@@ -12,15 +12,29 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * Service implementation for handling discount operations.
+ */
 @Service
 public class DiscountService implements IDiscountService {
     private final ItemRepository<Discount> discountRepository;
 
+    /**
+     * Constructs a new DiscountService with the given discount repository.
+     *
+     * @param discountRepository The repository for loading discount data.
+     */
     @Autowired
     public DiscountService(ItemRepository<Discount> discountRepository) {
         this.discountRepository = discountRepository;
     }
 
+    /**
+     * Loads discount entries from a file and converts them to DTOs.
+     *
+     * @param filePath The file path containing discount data.
+     * @return A list of DiscountDTO objects.
+     */
     public List<DiscountDTO> loadDiscounts(String filePath) {
         List<Discount> discounts = discountRepository.loadEntriesFromFile(filePath);
 
@@ -39,6 +53,12 @@ public class DiscountService implements IDiscountService {
         }).collect(Collectors.toList());
     }
 
+    /**
+     * Retrieves the top discounts per product, limited to a specified number.
+     *
+     * @param limit The maximum number of discounts to return.
+     * @return A list of DiscountDTO objects sorted by discount percentage.
+     */
     public List<DiscountDTO> getMaxDiscountPerProduct(int limit) {
         LocalDate today = LocalDate.now();
 

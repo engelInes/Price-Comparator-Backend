@@ -11,16 +11,30 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Service for analyzing discount data.
+ */
 @Service
 public class DiscountAnalysisService {
 
     private final ItemRepository<Discount> discountRepository;
 
+    /**
+     * Constructs a new {@code DiscountAnalysisService} with the provided discount repository.
+     *
+     * @param discountRepository Repository for accessing discount data.
+     */
     @Autowired
     public DiscountAnalysisService(ItemRepository<Discount> discountRepository) {
         this.discountRepository = discountRepository;
     }
 
+    /**
+     * Retrieves the top active discounts by percentage.
+     *
+     * @param limit The maximum number of top discounts to return.
+     * @return A list of DiscountDTO representing the highest discounts.
+     */
     public List<DiscountDTO> getHighestDiscounts(int limit) {
         LocalDate today = LocalDate.now();
         System.out.println("Fetching highest discounts. Current date: " + today);
@@ -52,6 +66,11 @@ public class DiscountAnalysisService {
         return highestDiscounts;
     }
 
+    /**
+     * Retrieves discounts that were newly added today.
+     *
+     * @return A list of DiscountDTO for discounts starting today.
+     */
     public List<DiscountDTO> getNewlyAddedDiscounts() {
         LocalDate today = LocalDate.now();
 
@@ -62,6 +81,12 @@ public class DiscountAnalysisService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Converts a Discount object into a DiscountDTO.
+     *
+     * @param discount The discount entity to convert.
+     * @return A DiscountDTO object.
+     */
     private DiscountDTO convertToDTO(Discount discount) {
         DiscountDTO dto = new DiscountDTO();
         dto.setProductId(discount.getProductId());
