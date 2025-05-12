@@ -27,7 +27,13 @@ public class BasketOptimizationService {
         this.discountRepository = discountRepository;
     }
 
+    /**
+     * Optimizes basket by finding the lowest price for each item from all stores
+     * @param basket List of basket items to optimize
+     * @return OptimizedBasketDTO with the most cost-effective shopping strategy
+     */
     public OptimizedBasketDTO optimizeBasket(List<BasketItem> basket) {
+
         OptimizedBasketDTO result = new OptimizedBasketDTO();
         LocalDate today = LocalDate.now();
 
@@ -49,14 +55,14 @@ public class BasketOptimizationService {
         }
 
         for (BasketItem item : basket) {
-            String productId = item.getProductId();
+            String productName = item.getProductName();
             int quantity = item.getQuantity();
 
-            List<PriceEntry> priceEntries = productRepository.findByProductName(productId);
+            List<PriceEntry> priceEntries = productRepository.findByProductName(productName);
             if (priceEntries.isEmpty()) continue;
 
             List<Discount> productDiscounts = activeDiscounts.stream()
-                    .filter(d -> d.getProductId().equals(productId))
+                    .filter(d -> d.getProductName().equals(productName))
                     .collect(Collectors.toList());
 
             Map<String, Double> storeToEffectivePrice = new HashMap<>();
@@ -75,6 +81,9 @@ public class BasketOptimizationService {
                 double discountAmount = regularPrice * (bestDiscountPercentage / 100.0);
                 double effectivePrice = regularPrice - discountAmount;
 
+                System.out.printf("Product: %s, Store: %s, Regular: %.2f€, Discount: %.2f€, Effective: %.2f€%n",
+                        productName, entry.getStoreName(), regularPrice, discountAmount, effectivePrice);
+
                 storeToEffectivePrice.put(store, effectivePrice);
                 storeToDiscount.put(store, discountAmount);
                 storeToPriceEntry.put(store, entry);
@@ -91,18 +100,12 @@ public class BasketOptimizationService {
                 PriceEntry priceEntry = storeToPriceEntry.get(store);
 
                 BasketItemDTO itemDTO = new BasketItemDTO();
-                itemDTO.setProductId(productId);
-                itemDTO.setProductName(item.getProductName());
+                itemDTO.setProductId(item.getProductId());
+                itemDTO.setProductName(productName);
                 itemDTO.setQuantity(quantity);
-                itemDTO.setPrice(effectivePrice);
+                itemDTO.setPrice(effectivePrice*quantity);
                 itemDTO.setSavings(discount * quantity);
                 itemDTO.setStoreName(store);
-
-                if (priceEntry.getPackageQuantity() > 0) {
-                    double unitPrice = effectivePrice / priceEntry.getPackageQuantity();
-                    itemDTO.setUnitPrice(unitPrice);
-                    itemDTO.setUnitPriceLabel("per " + priceEntry.getPackageUnit());
-                }
 
                 storeShoppingLists.get(store).addItem(itemDTO);
             }
@@ -117,9 +120,9 @@ public class BasketOptimizationService {
         return result;
     }
 
-    private double calculateOriginalCost(List<BasketItem> basket) {
+    public double calculateOriginalCost(List<BasketItem> basket) {
         Map<String, Integer> productQuantities = basket.stream()
-                .collect(Collectors.toMap(BasketItem::getProductId, BasketItem::getQuantity));
+                .collect(Collectors.toMap(BasketItem::getProductName, BasketItem::getQuantity));
 
         Map<String, Double> storeTotalCosts = new HashMap<>();
 
@@ -163,7 +166,13 @@ public class BasketOptimizationService {
                 .orElse(0.0);
     }
 
+    /**
+     * Optimizes basket by finding the lowest unit price for each item from all stores
+     * @param basket List of basket items to optimize
+     * @return OptimizedBasketDTO with the most cost-effective shopping strategy based on unit prices
+     */
     public OptimizedBasketDTO optimizeBasketWithUnitPrice(List<BasketItem> basket) {
+
         OptimizedBasketDTO result = new OptimizedBasketDTO();
         LocalDate today = LocalDate.now();
 
@@ -185,16 +194,17 @@ public class BasketOptimizationService {
         }
 
         for (BasketItem item : basket) {
-            String productId = item.getProductId();
+            String productName = item.getProductName();
             int quantity = item.getQuantity();
 
-            List<PriceEntry> priceEntries = productRepository.findByProductName(productId);
+            List<PriceEntry> priceEntries = productRepository.findByProductName(productName);
             if (priceEntries.isEmpty()) continue;
 
             List<Discount> productDiscounts = activeDiscounts.stream()
-                    .filter(d -> d.getProductId().equals(productId))
+                    .filter(d -> d.getProductName().equals(productName))
                     .collect(Collectors.toList());
 
+            Map<String, Double> storeToUnitPrice = new HashMap<>();
             Map<String, Double> storeToEffectivePrice = new HashMap<>();
             Map<String, Double> storeToDiscount = new HashMap<>();
             Map<String, PriceEntry> storeToPriceEntry = new HashMap<>();
@@ -202,6 +212,10 @@ public class BasketOptimizationService {
             for (PriceEntry entry : priceEntries) {
                 String store = entry.getStoreName();
                 double regularPrice = entry.getPrice();
+                double packageQuantity = entry.getPackageQuantity();
+                String packageUnit = entry.getPackageUnit();
+
+                double unitPrice = packageQuantity > 0 ? regularPrice / packageQuantity : regularPrice;
 
                 double bestDiscountPercentage = productDiscounts.stream()
                         .mapToDouble(Discount::getPercentageOfDiscount)
@@ -210,7 +224,12 @@ public class BasketOptimizationService {
 
                 double discountAmount = regularPrice * (bestDiscountPercentage / 100.0);
                 double effectivePrice = regularPrice - discountAmount;
+                double effectiveUnitPrice = packageQuantity > 0 ? effectivePrice / packageQuantity : effectivePrice;
 
+                System.out.printf("Product: %s, Store: %s, Regular: %.2f€, PkgQty: %.2f %s, Unit: %.2f€, Discount: %.2f€, EffectiveUnit: %.2f€%n",
+                        productName, entry.getStoreName(), regularPrice, packageQuantity, packageUnit, unitPrice, discountAmount, effectiveUnitPrice);
+
+                storeToUnitPrice.put(store, unitPrice);
                 storeToEffectivePrice.put(store, effectivePrice);
                 storeToDiscount.put(store, discountAmount);
                 storeToPriceEntry.put(store, entry);
@@ -227,10 +246,10 @@ public class BasketOptimizationService {
                 PriceEntry priceEntry = storeToPriceEntry.get(store);
 
                 BasketItemDTO itemDTO = new BasketItemDTO();
-                itemDTO.setProductId(productId);
-                itemDTO.setProductName(item.getProductName());
+                itemDTO.setProductId(item.getProductId());
+                itemDTO.setProductName(productName);
                 itemDTO.setQuantity(quantity);
-                itemDTO.setPrice(effectivePrice);
+                itemDTO.setPrice(effectivePrice * quantity);
                 itemDTO.setSavings(discount * quantity);
                 itemDTO.setStoreName(store);
 

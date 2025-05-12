@@ -54,10 +54,9 @@ public class DiscountAnalysisService {
 
     public List<DiscountDTO> getNewlyAddedDiscounts() {
         LocalDate today = LocalDate.now();
-        LocalDate yesterday = today.minusDays(1);
 
         return discountRepository.loadAllEntries().stream()
-                .filter(discount -> discount.getStartingDate().equals(today) || discount.getStartingDate().equals(yesterday))
+                .filter(discount -> discount.getStartingDate().equals(today))
                 .sorted(Comparator.comparing(Discount::getStartingDate).reversed())
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());

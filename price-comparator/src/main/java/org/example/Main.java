@@ -338,9 +338,15 @@ public class Main implements CommandLineRunner {
 
         for (ShoppingListDTO list : optimized.getShoppingLists()) {
             System.out.println("\nStore: " + list.getStoreName());
+            System.out.printf("Store Total: %.2f€%n", list.getTotalCost());
+            System.out.printf("Store Savings: %.2f€%n", list.getTotalSavings());
+
+            System.out.println("Items:");
             for (BasketItemDTO item : list.getItems()) {
-                System.out.printf(" - %s: %.2f€ (Qty: %d, Saved: %.2f€)%n",
-                        item.getProductName(), item.getPrice(), item.getQuantity(), item.getSavings());
+                System.out.printf(" - %s:%n", item.getProductName());
+                System.out.printf("   Quantity: %d%n", item.getQuantity());
+                System.out.printf("   Total Price: %.2f€%n", item.getPrice());
+                System.out.printf("   Savings: %.2f€%n", item.getSavings());
             }
         }
     }
