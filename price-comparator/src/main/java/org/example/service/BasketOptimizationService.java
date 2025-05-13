@@ -69,9 +69,15 @@ public class BasketOptimizationService {
             Map<String, Double> storeToDiscount = new HashMap<>();
             Map<String, PriceEntry> storeToPriceEntry = new HashMap<>();
 
+            double highestRegularPrice = 0.0;
+
             for (PriceEntry entry : priceEntries) {
                 String store = entry.getStoreName();
                 double regularPrice = entry.getPrice();
+
+                if (regularPrice > highestRegularPrice) {
+                    highestRegularPrice = regularPrice;
+                }
 
                 double bestDiscountPercentage = productDiscounts.stream()
                         .mapToDouble(Discount::getPercentageOfDiscount)
@@ -81,7 +87,7 @@ public class BasketOptimizationService {
                 double discountAmount = regularPrice * (bestDiscountPercentage / 100.0);
                 double effectivePrice = regularPrice - discountAmount;
 
-                System.out.printf("Product: %s, Store: %s, Regular: %.2f€, Discount: %.2f€, Effective: %.2f€%n",
+                System.out.printf("Product: %s, Store: %s, Regular: %.2fRON, Discount: %.2fRON, Effective: %.2fRON%n",
                         productName, entry.getStoreName(), regularPrice, discountAmount, effectivePrice);
 
                 storeToEffectivePrice.put(store, effectivePrice);
@@ -99,12 +105,14 @@ public class BasketOptimizationService {
                 double discount = storeToDiscount.get(store);
                 PriceEntry priceEntry = storeToPriceEntry.get(store);
 
+                double actualSavings = (highestRegularPrice - effectivePrice) * quantity;
+
                 BasketItemDTO itemDTO = new BasketItemDTO();
                 itemDTO.setProductId(item.getProductId());
                 itemDTO.setProductName(productName);
                 itemDTO.setQuantity(quantity);
                 itemDTO.setPrice(effectivePrice*quantity);
-                itemDTO.setSavings(discount * quantity);
+                itemDTO.setSavings(actualSavings);
                 itemDTO.setStoreName(store);
 
                 storeShoppingLists.get(store).addItem(itemDTO);
@@ -209,11 +217,17 @@ public class BasketOptimizationService {
             Map<String, Double> storeToDiscount = new HashMap<>();
             Map<String, PriceEntry> storeToPriceEntry = new HashMap<>();
 
+            double highestRegularPrice = 0.0;
+
             for (PriceEntry entry : priceEntries) {
                 String store = entry.getStoreName();
                 double regularPrice = entry.getPrice();
                 double packageQuantity = entry.getPackageQuantity();
                 String packageUnit = entry.getPackageUnit();
+
+                if (regularPrice > highestRegularPrice) {
+                    highestRegularPrice = regularPrice;
+                }
 
                 double unitPrice = packageQuantity > 0 ? regularPrice / packageQuantity : regularPrice;
 
@@ -226,7 +240,7 @@ public class BasketOptimizationService {
                 double effectivePrice = regularPrice - discountAmount;
                 double effectiveUnitPrice = packageQuantity > 0 ? effectivePrice / packageQuantity : effectivePrice;
 
-                System.out.printf("Product: %s, Store: %s, Regular: %.2f€, PkgQty: %.2f %s, Unit: %.2f€, Discount: %.2f€, EffectiveUnit: %.2f€%n",
+                System.out.printf("Product: %s, Store: %s, Regular: %.2f€, PkgQty: %.2f %s, Unit: %.2fRON, Discount: %.2fRON, EffectiveUnit: %.2fRON%n",
                         productName, entry.getStoreName(), regularPrice, packageQuantity, packageUnit, unitPrice, discountAmount, effectiveUnitPrice);
 
                 storeToUnitPrice.put(store, unitPrice);
@@ -245,12 +259,14 @@ public class BasketOptimizationService {
                 double discount = storeToDiscount.get(store);
                 PriceEntry priceEntry = storeToPriceEntry.get(store);
 
+                double actualSavings = (highestRegularPrice - effectivePrice) * quantity;
+
                 BasketItemDTO itemDTO = new BasketItemDTO();
                 itemDTO.setProductId(item.getProductId());
                 itemDTO.setProductName(productName);
                 itemDTO.setQuantity(quantity);
                 itemDTO.setPrice(effectivePrice * quantity);
-                itemDTO.setSavings(discount * quantity);
+                itemDTO.setSavings(actualSavings);
                 itemDTO.setStoreName(store);
 
                 if (priceEntry.getPackageQuantity() > 0) {

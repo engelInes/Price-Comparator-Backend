@@ -37,11 +37,8 @@ public class DiscountAnalysisService {
      */
     public List<DiscountDTO> getHighestDiscounts(int limit) {
         LocalDate today = LocalDate.now();
-        System.out.println("Fetching highest discounts. Current date: " + today);
 
         List<Discount> allDiscounts = discountRepository.loadAllEntries();
-        System.out.println("All loaded discount entries:");
-        allDiscounts.forEach(discount -> System.out.println(" - " + discount));
 
         List<Discount> validDiscounts = allDiscounts.stream()
                 .filter(discount -> {
@@ -51,17 +48,11 @@ public class DiscountAnalysisService {
                 })
                 .collect(Collectors.toList());
 
-        System.out.println("Filtered valid discounts:");
-        validDiscounts.forEach(discount -> System.out.println(" - " + discount));
-
         List<DiscountDTO> highestDiscounts = validDiscounts.stream()
                 .sorted(Comparator.comparing(Discount::getPercentageOfDiscount).reversed())
                 .limit(limit)
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
-
-        System.out.println("Final highest discounts (as DTOs):");
-        highestDiscounts.forEach(dto -> System.out.println(" - " + dto));
 
         return highestDiscounts;
     }

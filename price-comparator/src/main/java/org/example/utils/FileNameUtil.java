@@ -80,8 +80,6 @@ public class FileNameUtil {
             LocalDate date = LocalDate.parse(priceMatcher.group(2));
             return new FileInfo(storeName, date, false);
         }
-
-        System.out.println("Unrecognized filename pattern: " + fileName);
         return new FileInfo("unknown", LocalDate.now(), false);
     }
 }

@@ -31,7 +31,6 @@ public class DiscountRepository implements ItemRepository<Discount> {
         FileNameUtil.FileInfo fileInfo = FileNameUtil.parseFileName(fileName);
 
         if (!fileInfo.isDiscountFile()) {
-            System.out.println("Skipping non-discount files: " + fileName);
             return discounts;
         }
 
@@ -71,23 +70,19 @@ public class DiscountRepository implements ItemRepository<Discount> {
 
         File dataDir = new File("src/main/resources/data");
         if (!dataDir.exists() || !dataDir.isDirectory()) {
-            System.out.println("Discount data directory not found: " + dataDir.getAbsolutePath());
             return allDiscounts;
         }
 
         File[] files = dataDir.listFiles((dir, name) -> name.endsWith(".csv"));
         if (files == null) {
-            System.out.println("No CSV files found in: " + dataDir.getAbsolutePath());
             return allDiscounts;
         }
 
         for (File file : files) {
-            System.out.println("Loading file: " + file.getName());
             List<Discount> discountsFromFile = loadEntriesFromFile(file.getPath());
             allDiscounts.addAll(discountsFromFile);
         }
 
-        System.out.println("Total discounts loaded: " + allDiscounts.size());
         return allDiscounts;
     }
 }

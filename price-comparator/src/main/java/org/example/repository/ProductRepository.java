@@ -34,7 +34,6 @@ public class ProductRepository implements ItemRepository<PriceEntry> {
         FileNameUtil.FileInfo fileInfo = FileNameUtil.parseFileName(fileName);
 
         if (fileInfo.isDiscountFile()) {
-            System.out.println("Skipping discount files: " + fileName);
             return priceEntries;
         }
 

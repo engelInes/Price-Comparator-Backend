@@ -38,15 +38,6 @@ public class PriceTrendService {
     public List<PriceEntryDTO> getPriceTrendsForProduct(String productName) {
         List<PriceEntry> entries = productRepository.findByProductName(productName);
 
-        if (entries.isEmpty()) {
-            System.out.println("No entries found for product ID: " + productName);
-        } else {
-            System.out.println("Found entries for product ID: " + productName);
-            for (PriceEntry entry : entries) {
-                System.out.println(" - " + entry);
-            }
-        }
-
         return entries.stream()
                 .sorted(Comparator.comparing(PriceEntry::getDate))
                 .map(PriceEntryDTO::from)

@@ -63,7 +63,6 @@ public class DiscountService implements IDiscountService {
         LocalDate today = LocalDate.now();
 
         List<Discount> allDiscounts = discountRepository.loadAllEntries();
-        System.out.println("Total loaded for max-per-product: " + allDiscounts.size());
 
         Map<String, Discount> maxDiscounts = allDiscounts.stream()
                 .filter(discount -> !today.isBefore(discount.getStartingDate()) &&
@@ -80,7 +79,6 @@ public class DiscountService implements IDiscountService {
                 .map(DiscountDTO::convertToDTO)
                 .collect(Collectors.toList());
 
-        System.out.println("Max discounts per product selected: " + result.size());
         return result;
     }
 
