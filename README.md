@@ -21,6 +21,7 @@ A Java-based Spring Boot application that offers users several shopping faciliti
 ├── repository/     # Data access layer
 ├── service/        # Business logic
 ├── utils/          # Helper utilities
+├── ui/             # Command Line User Interface
 └── Main.java       # Application entry point
 
 └── resources/
