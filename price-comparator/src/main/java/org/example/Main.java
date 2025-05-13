@@ -1,5 +1,6 @@
 package org.example;
 
+import org.example.controller.*;
 import org.example.service.*;
 import org.example.ui.UI;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,25 +11,25 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 public class Main implements CommandLineRunner {
 
-    private final IProductService productService;
-    private final PriceTrendService priceTrendService;
-    private final DiscountAnalysisService discountAnalysisService;
-    private final DiscountService discountService;
-    private final BasketOptimizationService basketOptimizationService;
+    private final PriceTrendController priceTrendController;
+    private final BasketOptimizationController basketOptimizationController;
+    private final DiscountAnalysisController discountAnalysisController;
+    private final DiscountController discountController;
+    private final PriceAlertController priceAlertController;
     private final PriceAlertService priceAlertService;
 
     @Autowired
-    public Main(IProductService productService,
-                PriceTrendService priceTrendService,
-                DiscountAnalysisService discountAnalysisService,
-                DiscountService discountService,
-                BasketOptimizationService basketOptimizationService,
+    public Main(PriceTrendController priceTrendController,
+                BasketOptimizationController basketOptimizationController,
+                DiscountAnalysisController discountAnalysisController,
+                DiscountController discountController,
+                PriceAlertController priceAlertController,
                 PriceAlertService priceAlertService) {
-        this.productService = productService;
-        this.priceTrendService = priceTrendService;
-        this.discountAnalysisService = discountAnalysisService;
-        this.discountService = discountService;
-        this.basketOptimizationService = basketOptimizationService;
+        this.priceTrendController = priceTrendController;
+        this.basketOptimizationController = basketOptimizationController;
+        this.discountAnalysisController = discountAnalysisController;
+        this.discountController = discountController;
+        this.priceAlertController = priceAlertController;
         this.priceAlertService = priceAlertService;
     }
 
@@ -39,11 +40,11 @@ public class Main implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         UI ui = new UI(
-                productService,
-                priceTrendService,
-                discountAnalysisService,
-                discountService,
-                basketOptimizationService,
+                priceTrendController,
+                basketOptimizationController,
+                discountAnalysisController,
+                discountController,
+                priceAlertController,
                 priceAlertService
         );
 

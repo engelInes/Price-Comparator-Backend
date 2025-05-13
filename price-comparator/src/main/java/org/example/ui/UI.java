@@ -1,5 +1,6 @@
 package org.example.ui;
 
+import org.example.controller.*;
 import org.example.dto.*;
 import org.example.model.BasketItem;
 import org.example.service.*;
@@ -13,12 +14,11 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 public class UI {
-
-    private final IProductService productService;
-    private final PriceTrendService priceTrendService;
-    private final DiscountAnalysisService discountAnalysisService;
-    private final DiscountService discountService;
-    private final BasketOptimizationService basketOptimizationService;
+    private final PriceTrendController priceTrendController;
+    private final BasketOptimizationController basketOptimizationController;
+    private final DiscountAnalysisController discountAnalysisController;
+    private final DiscountController discountController;
+    private final PriceAlertController priceAlertController;
     private final PriceAlertService priceAlertService;
 
     private final ConcurrentMap<String, WatchService> fileWatchers = new ConcurrentHashMap<>();
@@ -26,17 +26,17 @@ public class UI {
     private static final String DEFAULT_USER_ID = "user1";
     private static final String CSV_DIRECTORY = "src/main/resources/data";
 
-    public UI(IProductService productService,
-              PriceTrendService priceTrendService,
-              DiscountAnalysisService discountAnalysisService,
-              DiscountService discountService,
-              BasketOptimizationService basketOptimizationService,
+    public UI(PriceTrendController priceTrendController,
+              BasketOptimizationController basketOptimizationController,
+              DiscountAnalysisController discountAnalysisController,
+              DiscountController discountController,
+              PriceAlertController priceAlertController,
               PriceAlertService priceAlertService) {
-        this.productService = productService;
-        this.priceTrendService = priceTrendService;
-        this.discountAnalysisService = discountAnalysisService;
-        this.discountService = discountService;
-        this.basketOptimizationService = basketOptimizationService;
+        this.priceTrendController = priceTrendController;
+        this.basketOptimizationController = basketOptimizationController;
+        this.discountAnalysisController = discountAnalysisController;
+        this.discountController = discountController;
+        this.priceAlertController = priceAlertController;
         this.priceAlertService = priceAlertService;
     }
 
@@ -143,19 +143,23 @@ public class UI {
     private void checkPriceAlerts() {
         System.out.println("Checking for triggered price alerts...");
 
-        priceAlertService.checkPriceAlerts();
+        try {
+            priceAlertService.checkPriceAlerts();
 
-        List<PriceAlertDTO> triggeredAlerts = priceAlertService.getTriggeredAlerts(DEFAULT_USER_ID);
+            List<PriceAlertDTO> triggeredAlerts = priceAlertController.getTriggeredAlerts(DEFAULT_USER_ID);
 
-        if (!triggeredAlerts.isEmpty()) {
-            System.out.println("PRICE ALERT NOTIFICATION");
-            System.out.println("--------------------------------");
-            for (PriceAlertDTO alert : triggeredAlerts) {
-                System.out.printf("PRICE DROP ALERT: %s is now at %.2f€ (below your target of %.2f€)!%n",
-                        alert.getProductName(), alert.getCurrentPrice(), alert.getTargetPrice());
-                System.out.printf("Available at: %s%n", alert.getStoreName());
+            if (!triggeredAlerts.isEmpty()) {
+                System.out.println("PRICE ALERT NOTIFICATION");
                 System.out.println("--------------------------------");
+                for (PriceAlertDTO alert : triggeredAlerts) {
+                    System.out.printf("PRICE DROP ALERT: %s is now at %.2fRON (below your target of %.2fRON)!%n",
+                            alert.getProductName(), alert.getCurrentPrice(), alert.getTargetPrice());
+                    System.out.printf("Available at: %s%n", alert.getStoreName());
+                    System.out.println("--------------------------------");
+                }
             }
+        } catch (Exception e) {
+            System.err.println("Error getting alert " + e.getMessage());
         }
     }
 
@@ -175,12 +179,16 @@ public class UI {
         String productName = scanner.nextLine();
 
         System.out.printf("searching for %s", productName);
-        List<PriceEntryDTO> trend = priceTrendService.getPriceTrendsForProduct(productName);
-        if (trend.isEmpty()) {
-            System.out.println("No trend data found.");
-        } else {
-            trend.forEach(e ->
-                    System.out.printf("%s: %.2f€ (%s)%n", e.getProductName(), e.getPrice(), e.getDate()));
+        try {
+            List<PriceEntryDTO> trend = priceTrendController.getPriceTrendsForProduct(productName);
+            if (trend.isEmpty()) {
+                System.out.println("No trend data found.");
+            } else {
+                trend.forEach(e ->
+                        System.out.printf("%s: %.2fRON (%s)%n", e.getProductName(), e.getPrice(), e.getDate()));
+            }
+        } catch (Exception e) {
+            System.err.println("Error getting product trend: " + e.getMessage());
         }
     }
 
@@ -190,12 +198,16 @@ public class UI {
         System.out.print("Enter store name: ");
         String store = scanner.nextLine();
 
-        List<PriceEntryDTO> trend = priceTrendService.getPriceTrendsForProductAndStore(productName, store);
-        if (trend.isEmpty()) {
-            System.out.println("No trend data found for that product in the specified store.");
-        } else {
-            trend.forEach(e ->
-                    System.out.printf("%s: %.2f€ (%s) in %s%n", e.getProductName(), e.getPrice(), e.getDate(), e.getStoreName()));
+        try {
+            List<PriceEntryDTO> trend = priceTrendController.getPriceTrendsForProductAndStore(productName, store);
+            if (trend.isEmpty()) {
+                System.out.println("No trend data found for that product in the specified store.");
+            } else {
+                trend.forEach(e ->
+                        System.out.printf("%s: %.2fRON (%s) in %s%n", e.getProductName(), e.getPrice(), e.getDate(), e.getStoreName()));
+            }
+        } catch (Exception e) {
+            System.err.println("Error getting product store trend: " + e.getMessage());
         }
     }
 
@@ -203,12 +215,16 @@ public class UI {
         System.out.print("Enter product category: ");
         String category = scanner.nextLine();
 
-        List<PriceEntryDTO> trend = priceTrendService.getPriceTrendsByCategory(category);
-        if (trend.isEmpty()) {
-            System.out.println("No trend data found for that category.");
-        } else {
-            trend.forEach(e ->
-                    System.out.printf("%s: %.2f€ (%s) [%s]%n", e.getProductName(), e.getPrice(), e.getDate(), e.getStoreName()));
+        try {
+            List<PriceEntryDTO> trend = priceTrendController.getPriceTrendsByCategory(category);
+            if (trend.isEmpty()) {
+                System.out.println("No trend data found for that category.");
+            } else {
+                trend.forEach(e ->
+                        System.out.printf("%s: %.2fRON (%s) [%s]%n", e.getProductName(), e.getPrice(), e.getDate(), e.getStoreName()));
+            }
+        } catch (Exception e) {
+            System.err.println("Error getting category trend: " + e.getMessage());
         }
     }
 
@@ -216,12 +232,16 @@ public class UI {
         System.out.print("Enter brand name: ");
         String brand = scanner.nextLine();
 
-        List<PriceEntryDTO> trend = priceTrendService.getPriceTrendsByBrand(brand);
-        if (trend.isEmpty()) {
-            System.out.println("No trend data found for that brand.");
-        } else {
-            trend.forEach(e ->
-                    System.out.printf("%s: %.2f€ (%s) [%s]%n", e.getProductId(), e.getPrice(), e.getDate(), e.getStoreName()));
+        try {
+            List<PriceEntryDTO> trend = priceTrendController.getPriceTrendsByBrand(brand);
+            if (trend.isEmpty()) {
+                System.out.println("No trend data found for that brand.");
+            } else {
+                trend.forEach(e ->
+                        System.out.printf("%s: %.2fRON (%s) [%s]%n", e.getProductId(), e.getPrice(), e.getDate(), e.getStoreName()));
+            }
+        } catch (Exception e) {
+            System.err.println("Error getting brand trend: " + e.getMessage());
         }
     }
 
@@ -234,23 +254,26 @@ public class UI {
             System.out.println("Invalid number.");
             return;
         }
-
-        var topDiscounts = discountAnalysisService.getHighestDiscounts(limit);
-        if (topDiscounts.isEmpty()) {
-            System.out.println("No discounts found.");
-        } else {
-            System.out.println("Top Discounts:");
-            topDiscounts.forEach(d -> System.out.printf(
-                    "%s (%s, %.0f%s %s): %.2f%% off from %s to %s%n",
-                    d.getProductName(),
-                    d.getBrand(),
-                    d.getPackageQuantity(),
-                    d.getPackageUnit(),
-                    d.getProductCategory(),
-                    d.getPercentageOfDiscount(),
-                    d.getStartingDate(),
-                    d.getEndingDate()
-            ));
+        try {
+            List<DiscountDTO> topDiscounts = discountAnalysisController.getHighestDiscounts(limit);
+            if (topDiscounts.isEmpty()) {
+                System.out.println("No discounts found.");
+            } else {
+                System.out.println("Top Discounts:");
+                topDiscounts.forEach(d -> System.out.printf(
+                        "%s (%s, %.0f%s %s): %.2f%% off from %s to %s%n",
+                        d.getProductName(),
+                        d.getBrand(),
+                        d.getPackageQuantity(),
+                        d.getPackageUnit(),
+                        d.getProductCategory(),
+                        d.getPercentageOfDiscount(),
+                        d.getStartingDate(),
+                        d.getEndingDate()
+                ));
+            }
+        } catch (Exception e) {
+            System.err.println("Error getting top discounts: " + e.getMessage());
         }
     }
 
@@ -264,22 +287,26 @@ public class UI {
             return;
         }
 
-        var maxDiscounts = discountService.getMaxDiscountPerProduct(limit);
-        if (maxDiscounts.isEmpty()) {
-            System.out.println("No maximum discounts found.");
-        } else {
-            System.out.println("Maximum Discounts (best per product across all stores):");
-            maxDiscounts.forEach(d -> System.out.printf(
-                    "%s (%s, %.0f%s %s): %.2f%% off from %s to %s%n",
-                    d.getProductName(),
-                    d.getBrand(),
-                    d.getPackageQuantity(),
-                    d.getPackageUnit(),
-                    d.getProductCategory(),
-                    d.getPercentageOfDiscount(),
-                    d.getStartingDate(),
-                    d.getEndingDate()
-            ));
+        try {
+            List<DiscountDTO> maxDiscounts = discountController.getMaxDiscountPerProduct(limit).getBody();
+            if (maxDiscounts.isEmpty()) {
+                System.out.println("No maximum discounts found.");
+            } else {
+                System.out.println("Maximum Discounts (best per product across all stores):");
+                maxDiscounts.forEach(d -> System.out.printf(
+                        "%s (%s, %.0f%s %s): %.2f%% off from %s to %s%n",
+                        d.getProductName(),
+                        d.getBrand(),
+                        d.getPackageQuantity(),
+                        d.getPackageUnit(),
+                        d.getProductCategory(),
+                        d.getPercentageOfDiscount(),
+                        d.getStartingDate(),
+                        d.getEndingDate()
+                ));
+            }
+        } catch (Exception e) {
+            System.err.println("Error getting max discounts: " + e.getMessage());
         }
     }
 
@@ -303,7 +330,7 @@ public class UI {
                 continue;
             }
 
-            List<PriceEntryDTO> priceEntries = priceTrendService.getPriceTrendsForProduct(name);
+            List<PriceEntryDTO> priceEntries = priceTrendController.getPriceTrendsForProduct(name);
             if (priceEntries.isEmpty()) {
                 System.out.println("Product not found: " + name);
                 continue;
@@ -318,24 +345,28 @@ public class UI {
             return;
         }
 
-        OptimizedBasketDTO optimized = basketOptimizationService.optimizeBasket(basket);
+        try {
+            OptimizedBasketDTO optimized = basketOptimizationController.optimizeBasket(basket);
 
-        System.out.printf("\nOriginal Cost: %.2f€%n", optimized.getOriginalCost());
-        System.out.printf("Optimized Cost: %.2f€%n", optimized.getTotalCost());
-        System.out.printf("Total Savings: %.2f€%n", optimized.getTotalSavings());
+            System.out.printf("\nOriginal Cost: %.2fRON%n", optimized.getOriginalCost());
+            System.out.printf("Optimized Cost: %.2fRON%n", optimized.getTotalCost());
+            System.out.printf("Total Savings: %.2fRON%n", optimized.getTotalSavings());
 
-        for (ShoppingListDTO list : optimized.getShoppingLists()) {
-            System.out.println("\nStore: " + list.getStoreName());
-            System.out.printf("Store Total: %.2f€%n", list.getTotalCost());
-            System.out.printf("Store Savings: %.2f€%n", list.getTotalSavings());
+            for (ShoppingListDTO list : optimized.getShoppingLists()) {
+                System.out.println("\nStore: " + list.getStoreName());
+                System.out.printf("Store Total: %.2fRON%n", list.getTotalCost());
+                System.out.printf("Store Savings: %.2fRON%n", list.getTotalSavings());
 
-            System.out.println("Items:");
-            for (BasketItemDTO item : list.getItems()) {
-                System.out.printf(" - %s:%n", item.getProductName());
-                System.out.printf("   Quantity: %d%n", item.getQuantity());
-                System.out.printf("   Total Price: %.2f€%n", item.getPrice());
-                System.out.printf("   Savings: %.2f€%n", item.getSavings());
+                System.out.println("Items:");
+                for (BasketItemDTO item : list.getItems()) {
+                    System.out.printf(" - %s:%n", item.getProductName());
+                    System.out.printf("   Quantity: %d%n", item.getQuantity());
+                    System.out.printf("   Total Price: %.2fRON%n", item.getPrice());
+                    System.out.printf("   Savings: %.2fRON%n", item.getSavings());
+                }
             }
+        } catch (Exception e) {
+            System.err.println("Error optimizing basket: " + e.getMessage());
         }
     }
 
@@ -359,7 +390,7 @@ public class UI {
                 continue;
             }
 
-            List<PriceEntryDTO> priceEntries = priceTrendService.getPriceTrendsForProduct(name);
+            List<PriceEntryDTO> priceEntries = priceTrendController.getPriceTrendsForProduct(name);
             if (priceEntries.isEmpty()) {
                 System.out.println("Product not found: " + name);
                 continue;
@@ -374,19 +405,23 @@ public class UI {
             return;
         }
 
-        OptimizedBasketDTO optimized = basketOptimizationService.optimizeBasketWithUnitPrice(basket);
+        try {
+            OptimizedBasketDTO optimized = basketOptimizationController.optimizeBasketWithUnitPrice(basket);
 
-        System.out.printf("\nOriginal Cost: %.2f€%n", optimized.getOriginalCost());
-        System.out.printf("Optimized Cost: %.2f€%n", optimized.getTotalCost());
-        System.out.printf("Total Savings: %.2f€%n", optimized.getTotalSavings());
+            System.out.printf("\nOriginal Cost: %.2fRON%n", optimized.getOriginalCost());
+            System.out.printf("Optimized Cost: %.2fRON%n", optimized.getTotalCost());
+            System.out.printf("Total Savings: %.2fRON%n", optimized.getTotalSavings());
 
-        for (ShoppingListDTO list : optimized.getShoppingLists()) {
-            System.out.println("\nStore: " + list.getStoreName());
-            for (BasketItemDTO item : list.getItems()) {
-                System.out.printf(" - %s: %.2f€ (Qty: %d, Saved: %.2f€) %s %.2f€ per unit%n",
-                        item.getProductName(), item.getPrice(), item.getQuantity(), item.getSavings(),
-                        item.getUnitPriceLabel(), item.getUnitPrice());
+            for (ShoppingListDTO list : optimized.getShoppingLists()) {
+                System.out.println("\nStore: " + list.getStoreName());
+                for (BasketItemDTO item : list.getItems()) {
+                    System.out.printf(" - %s: %.2fRON (Qty: %d, Saved: %.2fRON) %s %.2fRON per unit%n",
+                            item.getProductName(), item.getPrice(), item.getQuantity(), item.getSavings(),
+                            item.getUnitPriceLabel(), item.getUnitPrice());
+                }
             }
+        } catch (Exception e) {
+            System.err.println("Error optimizing basket with unit price: " + e.getMessage());
         }
     }
 
@@ -394,14 +429,14 @@ public class UI {
         System.out.print("Enter product name to watch: ");
         String productName = scanner.nextLine();
 
-        List<PriceEntryDTO> priceEntries = priceTrendService.getPriceTrendsForProduct(productName);
+        List<PriceEntryDTO> priceEntries = priceTrendController.getPriceTrendsForProduct(productName);
         if (priceEntries.isEmpty()) {
             System.out.println("Product not found. Please check the product name and try again.");
             return;
         }
 
         PriceEntryDTO latestPrice = priceEntries.get(0);
-        System.out.printf("Current price for %s: %.2f€ at %s%n",
+        System.out.printf("Current price for %s: %.2fRON at %s%n",
                 productName, latestPrice.getPrice(), latestPrice.getStoreName());
 
         System.out.print("Enter target price (must be below current price): ");
@@ -415,54 +450,66 @@ public class UI {
 
         String productId = latestPrice.getProductName();
 
-        PriceAlertDTO alertDTO = priceAlertService.createAlert(DEFAULT_USER_ID, productId, targetPrice);
+        try {
+            PriceAlertDTO alertDTO = priceAlertController.createAlert(DEFAULT_USER_ID, productId, targetPrice);
 
-        System.out.println("Price Alert created");
-        System.out.printf("You will be notified when %s reaches %.2f€ or lower.%n",
-                productName, targetPrice);
+            System.out.println("Price Alert created");
+            System.out.printf("You will be notified when %s reaches %.2fRON or lower.%n",
+                    productName, targetPrice);
 
-        System.out.println("Alert ID: " + alertDTO.getId());
+            System.out.println("Alert ID: " + alertDTO.getId());
+        } catch (Exception e) {
+            System.err.println("Error creating price alert: " + e.getMessage());
+        }
     }
 
     private void handleViewPriceAlerts(Scanner scanner) {
-        List<PriceAlertDTO> alerts = priceAlertService.getUserAlerts(DEFAULT_USER_ID);
+        try {
+            List<PriceAlertDTO> alerts = priceAlertController.getUserAlerts(DEFAULT_USER_ID);
 
-        if (alerts.isEmpty()) {
-            System.out.println("No active price alerts found.");
-        } else {
-            System.out.println("Your price alerts:");
+            if (alerts.isEmpty()) {
+                System.out.println("No active price alerts found.");
+            } else {
+                System.out.println("Your price alerts:");
 
-            for (PriceAlertDTO alert : alerts) {
-                if (alert.isActive()) {
-                    System.out.printf("ID: %d | %s | Target: %.2f€ | Current: %.2f€ | Store: %s | Created: %s%n",
+                for (PriceAlertDTO alert : alerts) {
+                    if (alert.isActive()) {
+                        System.out.printf("ID: %d | %s | Target: %.2fRON | Current: %.2fRON | Store: %s | Created: %s%n",
+                                alert.getId(),
+                                alert.getProductName(),
+                                alert.getTargetPrice(),
+                                alert.getCurrentPrice(),
+                                alert.getStoreName(),
+                                alert.getCreatedAt());
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Error viewing price alerts: " + e.getMessage());
+        }
+    }
+
+    private void handleViewTriggeredAlerts(Scanner scanner) {
+        try {
+            List<PriceAlertDTO> alerts = priceAlertController.getTriggeredAlerts(DEFAULT_USER_ID);
+
+            if (alerts.isEmpty()) {
+                System.out.println("No triggered price alerts found.");
+            } else {
+                System.out.println("Triggered price alerts:");
+
+                for (PriceAlertDTO alert : alerts) {
+                    System.out.printf("ID: %d | %s | Target: %.2fRON | Current: %.2fRON | Store: %s | Triggered: %s%n",
                             alert.getId(),
                             alert.getProductName(),
                             alert.getTargetPrice(),
                             alert.getCurrentPrice(),
                             alert.getStoreName(),
-                            alert.getCreatedAt());
+                            alert.getTriggeredAt());
                 }
             }
-        }
-    }
-
-    private void handleViewTriggeredAlerts(Scanner scanner) {
-        List<PriceAlertDTO> alerts = priceAlertService.getTriggeredAlerts(DEFAULT_USER_ID);
-
-        if (alerts.isEmpty()) {
-            System.out.println("No triggered price alerts found.");
-        } else {
-            System.out.println("Triggered price alerts:");
-
-            for (PriceAlertDTO alert : alerts) {
-                System.out.printf("ID: %d | %s | Target: %.2f€ | Current: %.2f€ | Store: %s | Triggered: %s%n",
-                        alert.getId(),
-                        alert.getProductName(),
-                        alert.getTargetPrice(),
-                        alert.getCurrentPrice(),
-                        alert.getStoreName(),
-                        alert.getTriggeredAt());
-            }
+        } catch (Exception e) {
+            System.err.println("Error viewing triggered alerts: " + e.getMessage());
         }
     }
 
@@ -478,7 +525,11 @@ public class UI {
             return;
         }
 
-        priceAlertService.deleteAlert(alertId);
-        System.out.println("Price Alert deleted.");
+        try {
+            priceAlertController.deleteAlert(alertId);
+            System.out.println("Price Alert deleted.");
+        } catch (Exception e) {
+            System.err.println("Error deleting price alert: " + e.getMessage());
+        }
     }
 }
