@@ -15,18 +15,37 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * Service for managing price alerts.
+ * Provides methods to create, retrieve, update, and delete price alerts,
+ * as well as to check and trigger alerts based on current prices.
+ */
 @Service
 public class PriceAlertService {
 
     private final PriceAlertRepository alertRepository;
     private final ProductRepository productRepository;
 
+    /**
+     * Constructs a PriceAlertService with the specified repositories.
+     *
+     * @param alertRepository   the repository to manage price alerts
+     * @param productRepository the repository to access product data
+     */
     @Autowired
     public PriceAlertService(PriceAlertRepository alertRepository, ProductRepository productRepository) {
         this.alertRepository = alertRepository;
         this.productRepository = productRepository;
     }
 
+    /**
+     * Creates a new price alert for a user.
+     *
+     * @param userId      the ID of the user
+     * @param productId   the ID of the product
+     * @param targetPrice the target price to trigger the alert
+     * @return the created PriceAlertDTO
+     */
     public PriceAlertDTO createAlert(String userId, String productId, double targetPrice) {
         PriceAlert alert = new PriceAlert();
         alert.setUserId(userId);
@@ -37,16 +56,34 @@ public class PriceAlertService {
         return convertToDTO(savedAlert);
     }
 
+    /**
+     * Retrieves all price alerts for a specific user.
+     *
+     * @param userId the ID of the user
+     * @return a list of PriceAlertDTOs
+     */
     public List<PriceAlertDTO> getUserAlerts(String userId) {
         return alertRepository.findByUserId(userId).stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Deletes a price alert by its ID.
+     *
+     * @param alertId the ID of the alert to delete
+     */
     public void deleteAlert(Long alertId) {
         alertRepository.delete(alertId);
     }
 
+    /**
+     * Updates the target price of an existing alert.
+     *
+     * @param alertId        the ID of the alert to update
+     * @param newTargetPrice the new target price
+     * @return the updated PriceAlertDTO, or null if the alert does not exist
+     */
     public PriceAlertDTO updateAlert(Long alertId, double newTargetPrice) {
         PriceAlert alert = alertRepository.findById(alertId);
         if (alert != null) {
@@ -59,6 +96,11 @@ public class PriceAlertService {
         return null;
     }
 
+    /**
+     * Checks all active price alerts and triggers them if the current price
+     * is less than or equal to the target price.
+     * This method is scheduled to run at fixed intervals.
+     */
     @Scheduled(fixedRate = 3600000)
     public void checkPriceAlerts() {
         List<PriceAlert> activeAlerts = alertRepository.findAllActive();
@@ -91,6 +133,12 @@ public class PriceAlertService {
         }
     }
 
+    /**
+     * Retrieves all triggered price alerts for a specific user.
+     *
+     * @param userId the ID of the user
+     * @return a list of triggered PriceAlertDTOs
+     */
     public List<PriceAlertDTO> getTriggeredAlerts(String userId) {
         return alertRepository.findByUserId(userId).stream()
                 .filter(alert -> !alert.isActive() && alert.getTriggeredAt() != null)
@@ -98,6 +146,12 @@ public class PriceAlertService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Converts a PriceAlert entity to its corresponding DTO.
+     *
+     * @param alert the PriceAlert entity
+     * @return the corresponding PriceAlertDTO
+     */
     private PriceAlertDTO convertToDTO(PriceAlert alert) {
         PriceAlertDTO dto = new PriceAlertDTO();
         dto.setId(alert.getId());
